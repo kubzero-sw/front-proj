@@ -1,0 +1,66 @@
+import React, {useEffect, useState} from "react";
+import Layout from "../../components/Layout/Layout";
+import {useSearchParams} from "react-router-dom";
+import {MainService} from "../../app/services/MainService";
+import s from "./Search.scss"
+import Cards from "../../components/card/card";
+import {Breadcrumbs, Link, Typography} from "@mui/material";
+
+const Search = () => {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const [movieList, setMovieList] = useState([])
+
+  useEffect(() => {
+    makeSearch()
+  }, [searchParams])
+
+  const makeSearch = () => {
+    const searchSlug = searchParams.get('slug')
+    if (searchSlug) {
+      MainService
+        .search(searchSlug)
+        .then(response => {
+          setMovieList(response.data.results)
+        })
+    }
+  }
+
+  return (
+    <Layout>
+      <div className={s.root}>
+        <Breadcrumbs sx={{paddingTop: "2rem", color: "rgb(223, 223, 223)"}} aria-label="breadcrumb">
+          <Link underline="hover" color="inherit" href="/">
+            Home
+          </Link>
+          <Typography sx={{color: "rgb(223, 223, 223)"}} color="text.primary">Search results by keyword
+            "{searchParams.get('slug')}"</Typography>
+        </Breadcrumbs>
+
+        <h2 className={s.heading}>Search results by keyword {searchParams.get('slug')}</h2>
+
+        <div className={s.results}>
+          {movieList.length > 0 &&
+            movieList.map(movie => (
+              <Cards
+                isInFavorite={false}
+                onFavoritesClick={() => {
+                }}
+                key={movie.id}
+                movie={movie}
+              />
+            ))
+          }
+        </div>
+
+        {movieList.length === 0 && (
+          <div className={s.empty}>
+            <p>No results found</p>
+            <img src="https://cdn-icons-png.flaticon.com/512/6134/6134065.png" alt=""/>
+          </div>
+        )}
+      </div>
+    </Layout>
+  )
+}
+
+export {Search}
